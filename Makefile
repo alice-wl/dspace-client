@@ -23,8 +23,11 @@ default: build
 
 
 android-debugapk: android-clean android-deps build
-	@cp -r build/* android/assets
+	@cp -r build/* android/assets/www
 	@cd android && ant clean && ant debug
+	@install -d build/apk
+	@cp android/bin/*-debug.apk build/apk
+
 android-deps: android/build.xml
 android-clean:
 	-rm -r android
@@ -34,11 +37,10 @@ android/build.xml:
 	@install -d android
 	cp -r pkgs/android/client/* android
 	$(ANDROID_BIN) update project -p android/ --subprojects -t $(ANDROID_API)
-	#@cp -r pkgs/android/client/* android/
-
 
 build: deps
 	@echo -n "Build & minify dspace-client.js... "
+	@rm -r build/
 	@node node_modules/.bin/r.js -o build.js > /dev/null
 	@echo "[OK]"
 	@echo -n "Moving Assets... "
@@ -48,7 +50,6 @@ build: deps
 	@echo -n "Merging and compressing dspace-client.css... "
 	@cat assets/css/main.css > .tmp.css
 	@cat assets/css/ui.css >> .tmp.css
-	@rm -r build/
 	@install -d build/assets/css
 	@node_modules/.bin/csso -i .tmp.css -o build/assets/css/dspace-client.css	
 	@rm .tmp.css
